@@ -1,8 +1,8 @@
 #!/usr/bin/make -f
 
 # the subcommands are located in the specific makefiles
-include scripts/makefiles/lint.mk
-include scripts/makefiles/proto.mk
+# include scripts/makefiles/lint.mk
+# include scripts/makefiles/proto.mk
 
 .DEFAULT_GOAL := help
 help:
@@ -11,7 +11,7 @@ help:
 	@echo "Usage:"
 	@echo "    make [command]"
 	@echo ""
-	@echo "  make build                 Build omenchaind binary"
+	@echo "  make build                 Build omend binary"
 	@echo "  make lint                  Show available lint commands"
 	@echo "  make test                  Show available test commands"
 	@echo "  make proto                 Show available proto commands"
@@ -85,7 +85,7 @@ build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 # process linker flags
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=omenchain \
-	-X github.com/cosmos/cosmos-sdk/version.AppName=omenchaind \
+	-X github.com/cosmos/cosmos-sdk/version.AppName=omend \
 	-X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 	-X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 	-X github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep) \
@@ -126,7 +126,7 @@ build-image:
 	docker build -f Dockerfile -t omen-chain/omenchain .
 
 $(BUILD_TARGETS): go.sum $(BUILDDIR)/
-	go $@ -mod=readonly $(BUILD_FLAGS) $(BUILD_ARGS) $(GO_MODULE)/cmd/omenchaind
+	go $@ -mod=readonly $(BUILD_FLAGS) $(BUILD_ARGS) $(GO_MODULE)/cmd/omend
 $(BUILDDIR)/:
 	mkdir -p $(BUILDDIR)/
 
@@ -188,8 +188,8 @@ release:
 		-e CMT_VERSION=$(CMT_VERSION) \
 		-e REPO_OWNER=$(REPO_OWNER) \
 		-e REPO_NAME=$(REPO_NAME) \
-		-v `pwd`:/go/src/omenchaind \
-		-w /go/src/omenchaind \
+		-v `pwd`:/go/src/omend \
+		-w /go/src/omend \
 		--platform=$(GORELEASER_PLATFORM) \
 		$(GORELEASER_IMAGE) \
 		release $(if $(GORELEASER_SKIP),--skip=$(GORELEASER_SKIP)) $(if $(GORELEASER_CONFIG),--config=$(GORELEASER_CONFIG)) \
@@ -208,8 +208,8 @@ goreleaser-build-local:
 		-e CMT_VERSION=$(CMT_VERSION) \
 		-e REPO_OWNER=$(REPO_OWNER) \
 		-e REPO_NAME=$(REPO_NAME) \
-		-v `pwd`:/go/src/omenchaind \
-		-w /go/src/omenchaind \
+		-v `pwd`:/go/src/omend \
+		-w /go/src/omend \
 		--platform=$(GORELEASER_PLATFORM) \
 		$(GORELEASER_IMAGE) \
 		build $(if $(GORELEASER_IDS),$(shell echo $(GORELEASER_IDS) | tr ',' ' ' | sed 's/[^ ]*/--id=&/g')) \
@@ -236,13 +236,13 @@ build-and-run-single-node: build
 	@echo "Building and running a single node for testing..."
 	@mkdir -p .omensinglenodetest
 	@if [ ! -f .omensinglenodetest/config/config.toml ]; then \
-		./build/omenchaind init single-node-test --chain-id test-chain --home .omensinglenodetest --default-denom uom; \
-		./build/omenchaind keys add validator --keyring-backend test --home .omensinglenodetest; \
-		./build/omenchaind genesis add-genesis-account $$(./build/omenchaind keys show validator -a --keyring-backend test --home .omensinglenodetest) 100000000000000uom --home .omensinglenodetest; \
-		./build/omenchaind genesis gentx validator 100000000uom --chain-id test-chain --keyring-backend test --home .omensinglenodetest; \
-		./build/omenchaind genesis collect-gentxs --home .omensinglenodetest; \
+		./build/omend init single-node-test --chain-id test-chain --home .omensinglenodetest --default-denom uom; \
+		./build/omend keys add validator --keyring-backend test --home .omensinglenodetest; \
+		./build/omend genesis add-genesis-account $$(./build/omend keys show validator -a --keyring-backend test --home .omensinglenodetest) 100000000000000uom --home .omensinglenodetest; \
+		./build/omend genesis gentx validator 100000000uom --chain-id test-chain --keyring-backend test --home .omensinglenodetest; \
+		./build/omend genesis collect-gentxs --home .omensinglenodetest; \
 		sed -i'' -e 's/"fee_denom": "stake"/"fee_denom": "uom"/' .omensinglenodetest/config/genesis.json; \
 	fi
-	./build/omenchaind start --home .omensinglenodetest --minimum-gas-prices 0uom
+	./build/omend start --home .omensinglenodetest --minimum-gas-prices 0uom
 
 .PHONY: build-and-run-single-node
